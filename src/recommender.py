@@ -1,5 +1,5 @@
 from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import csv
 
 @dataclass
@@ -30,21 +30,38 @@ class UserProfile:
     target_energy: float
     likes_acoustic: bool
 
+
+def _profile_to_prefs(user: UserProfile) -> Dict:
+    return {
+        "genre": user.favorite_genre,
+        "mood": user.favorite_mood,
+        "energy": user.target_energy,
+        "acousticness": 0.8 if user.likes_acoustic else 0.2,
+    }
+
+
 class Recommender:
     """
     OOP implementation of the recommendation logic.
-    Required by tests/test_recommender.py
+    Delegates to the functional core (score_song / recommend_songs) so the
+    scoring math has a single source of truth.
     """
     def __init__(self, songs: List[Song]):
         self.songs = songs
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
-        # TODO: Implement recommendation logic
-        return self.songs[:k]
+        prefs = _profile_to_prefs(user)
+        song_dicts = [asdict(s) for s in self.songs]
+        ranked = recommend_songs(prefs, song_dicts, k=k)
+        by_id = {s.id: s for s in self.songs}
+        return [by_id[r[0]["id"]] for r in ranked]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
-        # TODO: Implement explanation logic
-        return "Explanation placeholder"
+        prefs = _profile_to_prefs(user)
+        _, reasons = score_song(prefs, asdict(song))
+        if not reasons:
+            return f"{song.title} by {song.artist}: no matching preferences."
+        return f"{song.title} by {song.artist} — " + "; ".join(reasons)
 
 def load_songs(csv_path: str) -> List[Dict]:
     """

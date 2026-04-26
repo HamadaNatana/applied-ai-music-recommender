@@ -1,3 +1,10 @@
 pandas
 pytest
 streamlit
+pyarrow
+pytest-rerunfailures
+ollama
+pydantic
+pyyaml
+datasets
+requests

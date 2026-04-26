@@ -1,0 +1,89 @@
+id,title,artist,genre,genre_raw,mood,energy,tempo_bpm,valence,danceability,acousticness,popularity
+1,Blinding Lights,The Weeknd,pop,synth-pop,intense,0.73,171,0.33,0.51,0.001,92
+2,Shape of You,Ed Sheeran,pop,pop,happy,0.65,96,0.93,0.83,0.58,89
+3,Bad Guy,Billie Eilish,pop,electropop,moody,0.43,135,0.56,0.70,0.33,88
+4,Levitating,Dua Lipa,pop,dance-pop,happy,0.82,103,0.92,0.70,0.01,85
+5,As It Was,Harry Styles,pop,pop,happy,0.74,174,0.66,0.52,0.34,90
+6,Watermelon Sugar,Harry Styles,pop,pop,happy,0.82,95,0.56,0.55,0.12,82
+7,Stay,The Kid LAROI & Justin Bieber,pop,pop,intense,0.77,170,0.48,0.59,0.04,86
+8,Anti-Hero,Taylor Swift,pop,pop,chill,0.64,97,0.53,0.64,0.13,89
+9,Dance Monkey,Tones and I,pop,pop,happy,0.59,98,0.54,0.82,0.69,84
+10,Sunflower,Post Malone & Swae Lee,pop,pop,happy,0.52,90,0.91,0.76,0.55,85
+11,Bohemian Rhapsody,Queen,rock,classic-rock,moody,0.40,143,0.23,0.40,0.30,78
+12,Smells Like Teen Spirit,Nirvana,rock,grunge,intense,0.91,117,0.72,0.51,0.00,80
+13,Mr. Brightside,The Killers,rock,alt-rock,moody,0.91,148,0.23,0.36,0.001,82
+14,Seven Nation Army,The White Stripes,rock,rock,moody,0.46,124,0.32,0.74,0.18,80
+15,Numb,Linkin Park,rock,nu-metal,intense,0.92,110,0.39,0.52,0.00,79
+16,Sweet Child O' Mine,Guns N' Roses,rock,rock,happy,0.85,126,0.65,0.51,0.10,80
+17,Wonderwall,Oasis,rock,brit-rock,chill,0.52,87,0.65,0.56,0.40,82
+18,Hotel California,Eagles,rock,classic-rock,chill,0.51,147,0.58,0.57,0.30,78
+19,Don't Stop Believin',Journey,rock,classic-rock,happy,0.73,119,0.66,0.55,0.10,80
+20,Sweet Home Alabama,Lynyrd Skynyrd,rock,southern-rock,happy,0.69,98,0.86,0.58,0.27,76
+21,HUMBLE.,Kendrick Lamar,hip-hop,hip-hop,intense,0.62,150,0.42,0.91,0.00,84
+22,God's Plan,Drake,hip-hop,hip-hop,moody,0.45,77,0.36,0.75,0.03,82
+23,Lose Yourself,Eminem,hip-hop,hip-hop,intense,0.77,86,0.27,0.72,0.06,84
+24,SICKO MODE,Travis Scott,hip-hop,trap,intense,0.73,155,0.45,0.83,0.00,81
+25,Industry Baby,Lil Nas X,hip-hop,hip-hop,happy,0.71,150,0.90,0.74,0.04,83
+26,Old Town Road,Lil Nas X,hip-hop,country-rap,happy,0.62,137,0.64,0.88,0.05,82
+27,Money Trees,Kendrick Lamar,hip-hop,hip-hop,chill,0.56,143,0.41,0.74,0.06,78
+28,Lucid Dreams,Juice WRLD,hip-hop,hip-hop,moody,0.57,83,0.22,0.51,0.35,80
+29,Levels,Avicii,electronic,edm,intense,0.85,126,0.55,0.66,0.04,78
+30,One More Time,Daft Punk,electronic,house,happy,0.83,123,0.69,0.75,0.08,78
+31,Strobe,Deadmau5,electronic,progressive-house,moody,0.65,128,0.41,0.60,0.03,64
+32,Animals,Martin Garrix,electronic,edm,intense,0.85,128,0.45,0.75,0.00,75
+33,Wake Me Up,Avicii,electronic,edm,happy,0.78,124,0.65,0.52,0.05,82
+34,Titanium,David Guetta ft. Sia,electronic,edm,intense,0.78,126,0.32,0.51,0.05,81
+35,Late Night Lofi,LoRoom,electronic,lofi,chill,0.30,82,0.55,0.62,0.78,60
+36,Coffee Shop Rain,Chillhop Beats,electronic,lofi,chill,0.32,78,0.50,0.55,0.85,58
+37,Aurora Drive,Neon Echo,electronic,synthwave,moody,0.68,110,0.40,0.65,0.10,55
+38,Midnight Loop,LoRoom,electronic,lofi,chill,0.40,82,0.45,0.60,0.65,60
+39,Take Five,Dave Brubeck Quartet,jazz,jazz,relaxed,0.41,174,0.51,0.45,0.93,68
+40,So What,Miles Davis,jazz,modal-jazz,relaxed,0.27,137,0.33,0.51,0.97,64
+41,Fly Me to the Moon,Frank Sinatra,jazz,vocal-jazz,chill,0.34,120,0.58,0.61,0.71,72
+42,My Funny Valentine,Chet Baker,jazz,jazz,moody,0.20,82,0.21,0.32,0.95,58
+43,Autumn Leaves,Bill Evans,jazz,jazz,moody,0.18,98,0.30,0.34,0.96,55
+44,Blue in Green,Miles Davis,jazz,modal-jazz,moody,0.15,68,0.18,0.27,0.97,58
+45,Clair de Lune,Claude Debussy,classical,classical,relaxed,0.10,66,0.18,0.20,0.99,70
+46,Moonlight Sonata,Ludwig van Beethoven,classical,classical,moody,0.15,60,0.10,0.20,0.99,68
+47,Canon in D,Pachelbel,classical,baroque,relaxed,0.20,63,0.55,0.30,0.99,66
+48,Für Elise,Ludwig van Beethoven,classical,classical,relaxed,0.18,72,0.32,0.25,0.99,68
+49,Spring (Four Seasons),Antonio Vivaldi,classical,baroque,happy,0.43,120,0.78,0.35,0.95,65
+50,Air on the G String,J.S. Bach,classical,baroque,relaxed,0.12,65,0.45,0.20,0.99,62
+51,Cruise,Florida Georgia Line,country,country,happy,0.71,105,0.74,0.65,0.20,70
+52,Wagon Wheel,Old Crow Medicine Show,country,country,happy,0.62,147,0.83,0.62,0.45,70
+53,Friends in Low Places,Garth Brooks,country,country,happy,0.65,127,0.79,0.59,0.30,68
+54,Tennessee Whiskey,Chris Stapleton,country,country,chill,0.45,86,0.43,0.42,0.55,78
+55,The Bones,Maren Morris,country,country,chill,0.51,80,0.46,0.66,0.30,70
+56,The House That Built Me,Miranda Lambert,country,country,moody,0.30,78,0.32,0.40,0.65,60
+57,Master of Puppets,Metallica,metal,thrash-metal,intense,0.94,212,0.32,0.31,0.00,72
+58,Enter Sandman,Metallica,metal,heavy-metal,intense,0.92,124,0.42,0.53,0.00,75
+59,Chop Suey!,System of a Down,metal,nu-metal,intense,0.95,128,0.40,0.40,0.00,72
+60,In the End,Linkin Park,metal,nu-metal,intense,0.86,105,0.33,0.55,0.00,80
+61,Bring Me to Life,Evanescence,metal,gothic-metal,intense,0.94,95,0.27,0.33,0.00,78
+62,Toxicity,System of a Down,metal,nu-metal,intense,0.96,144,0.42,0.45,0.00,70
+63,Halo,Beyoncé,r&b,r-n-b,chill,0.59,80,0.30,0.46,0.21,80
+64,Adorn,Miguel,r&b,r-n-b,chill,0.48,88,0.74,0.69,0.04,70
+65,Earned It,The Weeknd,r&b,r-n-b,moody,0.56,70,0.35,0.50,0.30,78
+66,Crazy in Love,Beyoncé,r&b,r-n-b,happy,0.78,99,0.71,0.65,0.07,78
+67,No Tears Left to Cry,Ariana Grande,r&b,r-n-b,happy,0.71,122,0.54,0.70,0.04,80
+68,Pink + White,Frank Ocean,r&b,r-n-b,chill,0.50,160,0.55,0.55,0.50,72
+69,Despacito,Luis Fonsi,latin,reggaeton,happy,0.81,89,0.85,0.66,0.21,85
+70,Bailando,Enrique Iglesias,latin,latin-pop,happy,0.82,96,0.93,0.75,0.30,78
+71,Hips Don't Lie,Shakira,latin,latin-pop,happy,0.83,100,0.76,0.78,0.16,82
+72,Macarena,Los del Río,latin,latin-pop,happy,0.65,103,0.92,0.85,0.10,72
+73,Tití Me Preguntó,Bad Bunny,latin,reggaeton,intense,0.65,107,0.62,0.65,0.05,88
+74,La Bamba,Ritchie Valens,latin,rock-en-espanol,happy,0.65,152,0.92,0.55,0.30,72
+75,Hallelujah,Leonard Cohen,folk,folk,moody,0.31,129,0.20,0.42,0.86,70
+76,The Sound of Silence,Simon & Garfunkel,folk,folk,moody,0.22,104,0.28,0.32,0.92,72
+77,Mr. Tambourine Man,Bob Dylan,folk,folk,chill,0.42,110,0.51,0.42,0.78,68
+78,Country Roads,John Denver,folk,folk,happy,0.52,80,0.78,0.57,0.78,75
+79,Riptide,Vance Joy,folk,indie-folk,chill,0.62,102,0.65,0.58,0.55,78
+80,Skinny Love,Bon Iver,folk,indie-folk,moody,0.31,120,0.20,0.47,0.85,70
+81,One Love,Bob Marley,reggae,reggae,happy,0.55,82,0.83,0.69,0.40,72
+82,No Woman No Cry,Bob Marley,reggae,reggae,chill,0.42,78,0.62,0.56,0.50,70
+83,Three Little Birds,Bob Marley,reggae,reggae,happy,0.60,76,0.92,0.72,0.30,72
+84,Red Red Wine,UB40,reggae,reggae,happy,0.68,101,0.78,0.76,0.25,68
+85,Lofi Study Beats,Chill Cow,electronic,lofi,focused,0.28,75,0.45,0.55,0.82,55
+86,Deep Focus,Productivity Sounds,electronic,ambient,focused,0.20,68,0.40,0.35,0.92,52
+87,Rainy Library,Soft Pages,electronic,ambient,focused,0.15,60,0.35,0.30,0.95,50
+88,Code & Coffee,LoRoom,electronic,lofi,focused,0.32,78,0.48,0.58,0.78,58
