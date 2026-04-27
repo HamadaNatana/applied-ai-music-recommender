@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, field_validator
 class IntentSchema(BaseModel):
     genre: Optional[str] = None
     mood: Optional[str] = None
+    artist: Optional[str] = None
     energy: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     valence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     danceability: Optional[float] = Field(default=None, ge=0.0, le=1.0)
@@ -23,6 +24,15 @@ class IntentSchema(BaseModel):
         if isinstance(v, str):
             v = v.strip().lower()
             if v in ("", "null", "none", "n/a"):
+                return None
+        return v
+
+    @field_validator("artist", mode="before")
+    @classmethod
+    def normalize_artist(cls, v):
+        if isinstance(v, str):
+            v = v.strip()
+            if v.lower() in ("", "null", "none", "n/a"):
                 return None
         return v
 

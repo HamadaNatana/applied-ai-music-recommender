@@ -13,3 +13,9 @@ venv/
 
 # Pytest cache
 .pytest_cache/
+
+# Generated catalog cache (auto-rebuilt from HuggingFace on first run)
+data/songs.parquet
+
+# Env files (may contain Spotify creds)
+.env

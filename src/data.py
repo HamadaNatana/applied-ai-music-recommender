@@ -114,25 +114,43 @@ def derive_mood(row: pd.Series) -> str:
     return "chill"
 
 
+def _popularity_weights(group: pd.DataFrame) -> Optional[pd.Series]:
+    """Bias sampling toward popular tracks so famous artists land in the
+    sample rather than getting cut by uniform random. Quadratic so a
+    popularity-80 track is ~50x more likely than a popularity-10 track."""
+    if "popularity" not in group.columns:
+        return None
+    base = group["popularity"].fillna(0).clip(0, 100).astype(float) + 10.0
+    return base ** 2
+
+
 def _stratified_sample(
-    df: pd.DataFrame, target_size: int, per_genre_min: int = 50
+    df: pd.DataFrame, target_size: int, per_genre_min: int = 100
 ) -> pd.DataFrame:
     """Sample so every genre family has at least `per_genre_min` tracks
-    (or all of them if fewer exist) up to `target_size` total rows."""
+    (or all of them if fewer exist) up to `target_size` total rows.
+    Sampling is weighted by Spotify popularity so household-name artists
+    (Kendrick, Beyoncé, Drake, etc.) make it into the working set."""
     if len(df) <= target_size:
         return df.copy()
     parts: List[pd.DataFrame] = []
     by_genre = df.groupby("genre", group_keys=False)
     for _, group in by_genre:
         n = min(len(group), per_genre_min)
-        parts.append(group.sample(n=n, random_state=42))
+        weights = _popularity_weights(group)
+        parts.append(group.sample(n=n, weights=weights, random_state=42))
     base = pd.concat(parts)
     remaining = target_size - len(base)
     if remaining > 0:
-        extras = df.drop(base.index, errors="ignore").sample(
-            n=min(remaining, max(0, len(df) - len(base))), random_state=42
-        )
-        base = pd.concat([base, extras])
+        leftover = df.drop(base.index, errors="ignore")
+        n_extra = min(remaining, len(leftover))
+        if n_extra > 0:
+            extras = leftover.sample(
+                n=n_extra,
+                weights=_popularity_weights(leftover),
+                random_state=42,
+            )
+            base = pd.concat([base, extras])
     return base.sample(frac=1.0, random_state=42).reset_index(drop=True)
 
 

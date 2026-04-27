@@ -57,3 +57,20 @@ def test_to_user_prefs_empty_when_all_none():
 def test_intent_strips_whitespace():
     intent = IntentSchema(genre="  POP  ")
     assert intent.genre == "pop"
+
+
+def test_intent_accepts_artist_field():
+    intent = IntentSchema(artist="The Weeknd")
+    assert intent.artist == "The Weeknd"
+
+
+def test_intent_artist_treats_null_strings_as_none():
+    for sentinel in ("", "null", "None", "n/a"):
+        intent = IntentSchema(artist=sentinel)
+        assert intent.artist is None
+
+
+def test_intent_artist_strips_whitespace_but_preserves_case():
+    """Artist case matters for display; just trim whitespace."""
+    intent = IntentSchema(artist="  Bad Bunny  ")
+    assert intent.artist == "Bad Bunny"
