@@ -1,0 +1,76 @@
+{
+  "total_cases": 30,
+  "passed": 30,
+  "pass_rate": 1.0,
+  "hallucinated_id_count": 0,
+  "by_type": {
+    "behavioral": {
+      "passed": 12,
+      "total": 12,
+      "rate": 1.0
+    },
+    "golden": {
+      "passed": 12,
+      "total": 12,
+      "rate": 1.0
+    },
+    "refinement": {
+      "passed": 6,
+      "total": 6,
+      "rate": 1.0
+    }
+  },
+  "by_category": {
+    "adversarial": {
+      "passed": 1,
+      "total": 1,
+      "rate": 1.0
+    },
+    "aux": {
+      "passed": 1,
+      "total": 1,
+      "rate": 1.0
+    },
+    "chill": {
+      "passed": 1,
+      "total": 1,
+      "rate": 1.0
+    },
+    "classical": {
+      "passed": 1,
+      "total": 1,
+      "rate": 1.0
+    },
+    "dance": {
+      "passed": 1,
+      "total": 1,
+      "rate": 1.0
+    },
+    "party": {
+      "passed": 1,
+      "total": 1,
+      "rate": 1.0
+    },
+    "refinement": {
+      "passed": 6,
+      "total": 6,
+      "rate": 1.0
+    },
+    "sad": {
+      "passed": 2,
+      "total": 2,
+      "rate": 1.0
+    },
+    "study": {
+      "passed": 2,
+      "total": 2,
+      "rate": 1.0
+    },
+    "workout": {
+      "passed": 2,
+      "total": 2,
+      "rate": 1.0
+    }
+  },
+  "error_count": 0
+}
