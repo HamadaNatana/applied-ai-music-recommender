@@ -1,221 +1,231 @@
-# 🎵 Music Recommender Simulation
+# SoundFit — Conversational Music Recommender
 
-![alt text](images/image.png)
+A local-first agentic music recommender. Type what you're in the mood for; a
+local `qwen2.5:3b` agent (via Ollama) extracts musical intent from natural
+language, a deterministic feature scorer ranks ~5,000 real Spotify tracks
+sourced from a public HuggingFace dataset, and the agent writes grounded
+explanations citing concrete features. Multi-turn refinement, no API keys
+required, no songs ever invented.
 
-## Project Summary
+![architecture](assets/architecture.png)
 
-In this project you will build and explain a small music recommender system.
+## What this project is
 
-Your goal is to:
+This started as a simple weighted-feature scorer over a 10-song catalog
+(SoundFit 1.0, see [model_card.md](model_card.md)). It became a
+portfolio-grade demonstration of:
 
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
+- **Real agentic pattern, not a chat wrapper** — structured intent extraction,
+  scorer-as-tool, grounded explanation, multi-turn refinement, chat memory
+- **Production-flavored engineering** — Docker-ready, healthchecks, env
+  configuration, graceful Ollama-down fallback, deterministic seeds
+- **Measurable, not vibes-based** — property-based eval harness with metrics
+  CSV (intent accuracy, hallucination rate, agent-vs-baseline overlap,
+  refinement consistency, explanation grounding)
+- **Local-first, runnable anywhere** — `qwen2.5:3b` via Ollama; one env var
+  flips it to a remote Ollama host if your local RAM is tight
+- **Visible reasoning** — the Streamlit UI shows parsed intent JSON,
+  candidate scores, and live eval metrics side-by-side with the chat
 
-Replace this paragraph with your own summary of what your version does.
+The original rule-based scoring code in [src/recommender.py](src/recommender.py)
+is **untouched** — it stays as the deterministic ranking layer. The agent
+adds an *understanding* layer (intent extraction) and an *explanation*
+layer on top.
 
----
+## Quickstart
 
-## How The System Works
-
-In real world applications, songs are suggested based on different aspects of the song's characteristics. Some systems prioritize the genre of the music as the most important aspect for the recommendations, while others prioritize the user's most listened to artists. In this system, the recommender will prioritize the user's favorite mood and genre of songs as stored in the UserProfile.
-
-The recommender system will score the mood and genre of the song's with the highest priority, then the energy and valence and will be rated along the second tier of priorities. Then, the final tier will involve rating the danceability and acousticness. These priorities will be based on a weighted score of how each category aligns with the user's preferences. 
-
-The highest priorities will be rated based on exact matches, since mood and genre are plain words and cannot be converted into numbers. If it is an exact match, then the score will be 1, and 0 otherwise. The lower priorities will be kept as their own scores attribute to them. The scoring method will be 1 - the absolute value of the difference from the user's preferences with the decimal values pulled from the song's data. 
-
-These scores will then be multiplied by the following weights:
-- Genre match - x3
-- Mood match - x2
-- Energy - x2
-- Valence - x1.5
-- Danceability - x1
-- Acousticness - x0.5
-
-The scores will then be added up together, and the recommender will then sort those recommendations based on the highest scores.
-
----
-
-## Getting Started
-
-### Setup
-
-1. Create a virtual environment (optional but recommended):
-
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate      # Mac or Linux
-   .venv\Scripts\activate         # Windows
-
-2. Install dependencies
+### 1) Start Ollama and pull the model
 
 ```bash
+# macOS / Linux
+brew install ollama        # or download from ollama.com
+ollama serve &             # background daemon
+ollama pull qwen2.5:3b     # ~2GB, one-time
+```
+
+### 2) Install dependencies
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3. Run the app:
+### 3) Run the chat UI
 
 ```bash
-python -m src.main
+streamlit run src/streamlit_app.py
+# → opens http://localhost:8501
 ```
 
-### Running Tests
-
-Run the starter tests with:
+Or use the CLI REPL:
 
 ```bash
-pytest
+python -m src.main             # interactive chat with the agent
+python -m src.main --baseline  # rule-based REPL, no LLM
+python -m src.main --demo      # legacy 4-profile baseline demo
 ```
 
-You can add more tests in `tests/test_recommender.py`.
+### 4) (Optional) Spotify enrichment for album art + 30s previews
 
----
+Get a `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` from
+[developer.spotify.com](https://developer.spotify.com/dashboard), then:
 
-## Experiments You Tried
+```bash
+cp .env.example .env
+# edit .env to fill them in
+```
 
-Use this section to document the experiments you ran. For example:
+Without these the app runs perfectly fine — you just don't get cover images.
+The deprecated audio-features endpoint is **not** used; audio data comes from
+the HuggingFace catalog.
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+## Try these
 
-![alt text](images/image-1.png)
-![alt text](images/image-2.png)
-![alt text](images/image-3.png)
+| Query | What the agent does |
+|---|---|
+| `aux rap songs` | Slang → `genre=hip-hop, mood=intense, energy~0.85` |
+| `late night coding music` | `mood=focused, energy<0.4, acousticness~0.7` |
+| `songs by Drake` | Catalog filter by artist; falls back to similar-style picks if missing |
+| `more upbeat though` | Refinement: same genre, higher energy |
+| `polka music` | OOV genre → null'd at validator, agent degrades gracefully |
+| `heartbreak playlist` | `valence<0.3, mood=moody/relaxed` |
 
----
+Type `reset` (or `clear`) in the CLI to wipe chat history mid-session.
 
-## Limitations and Risks
+## Architecture
 
-Summarize some limitations of your recommender.
+Per-turn pipeline:
 
-Examples:
+1. **Intent extraction** — `qwen2.5:3b` with `format=json`. Validated by a
+   Pydantic schema; OOV genres/moods are nulled, numerics coerced and
+   clamped, and `artist` is dropped if its name doesn't appear in the
+   *current* user message (a hard rule that stops the LLM from leaking
+   artists across turns).
+2. **Scoring (deterministic tool)** — `recommend_songs()` in
+   [src/recommender.py](src/recommender.py), unchanged. The LLM never reorders.
+3. **Grounded explanation** — `qwen2.5:3b` writes one short sentence per
+   candidate, restricted to the IDs it was given. If it tries to invent an
+   ID we drop the LLM output and use the deterministic reason strings.
+4. **Memory & refinement** — chat history kept in `st.session_state`. When
+   the LLM detects a refinement (`more upbeat`, `less intense`,
+   `show different ones`), feature fields are merged with the prior turn's
+   intent. Artist is *not* carried over — it's a fresh switch each turn.
 
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
+See [assets/architecture.mmd](assets/architecture.mmd) for the editable
+Mermaid source.
 
-You will go deeper on this in your model card.
+## Catalog
 
----
+~5,000 real tracks sampled from the public HuggingFace dataset
+[`maharshipandya/spotify-tracks-dataset`](https://huggingface.co/datasets/maharshipandya/spotify-tracks-dataset).
+The original Spotify audio features (energy, valence, danceability,
+acousticness, tempo) are preserved. Sampling is **popularity-weighted**
+(quadratic) so household-name artists land in the working set instead of
+getting cut by uniform random.
 
-## Reflection
+Spotify deprecated public access to the `/audio-features`,
+`/recommendations`, and `/related-artists` endpoints for new apps in
+November 2024. We work around this by sourcing audio features from the
+HuggingFace dataset; the still-working `/search` endpoint is used only
+(optionally) for album art and preview audio.
 
-Read and complete `model_card.md`:
+The agent's scorer can't use a `mood` field straight from Spotify (it
+doesn't exist), so we derive it deterministically from
+`(valence, energy, acousticness, instrumentalness)` — see
+[`derive_mood`](src/data.py) and the [model card](model_card.md).
 
-[**Model Card**](model_card.md)
+If HuggingFace is unreachable, the app falls back to
+[data/songs_sample.csv](data/songs_sample.csv) — 88 hand-curated tracks
+committed to the repo. Tests use this sample so they run offline.
 
-Write 1 to 2 paragraphs here about what you learned:
+## Evaluation
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+Property-based YAML cases live in [eval/](eval). Run the live harness with:
 
+```bash
+pytest --ollama -v   # ~5 min on CPU
+```
 
----
+The latest run wrote `eval/results/summary.json`:
 
-## 7. `model_card_template.md`
+```json
+{
+  "total_cases": 30,
+  "passed": 30,
+  "pass_rate": 1.0,
+  "hallucinated_id_count": 0,
+  "by_type": {
+    "behavioral": { "passed": 12, "total": 12, "rate": 1.0 },
+    "golden":     { "passed": 12, "total": 12, "rate": 1.0 },
+    "refinement": { "passed":  6, "total":  6, "rate": 1.0 }
+  }
+}
+```
 
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}  
+Hard guarantees (the harness fails if violated):
 
-```markdown
-# 🎧 Model Card - Music Recommender Simulation
+- The agent **never** returns a song ID that isn't in the catalog
+- Behavioral pass rate floor: 70%
+- Golden pass rate floor: 60%
+- Refinement pass rate floor: 50%
 
-## 1. Model Name
+Cases come in three flavors:
 
-Give your recommender a name, for example:
+- **Behavioral** — assert what the intent parser extracts in isolation
+  (genre, mood, artist). Includes adversarial cases ("polka music" must
+  return `genre=null`, not a hallucinated similar genre).
+- **Golden** — end-to-end. Free-text query → property assertions on top-K
+  features (e.g. "upbeat workout music" → `top1_energy >= 0.7`).
+- **Refinement** — multi-turn. "chill electronic" → "more upbeat though"
+  must shift average energy upward by at least +0.10.
 
-> VibeFinder 1.0
+Open `eval/results/latest.csv` (regenerated each run) for per-case detail
+or use the Streamlit Eval tab.
 
----
+## Repository layout
 
-## 2. Intended Use
+```
+src/
+  agent.py           # Ollama pipeline, parse_intent, explain, run_agent
+  schemas.py         # Pydantic IntentSchema, RecommendationCard, AgentTurn
+  data.py            # HF Hub loader, mood derivation, genre normalization
+  recommender.py     # Original rule-based scorer (UNCHANGED)
+  spotify_enrich.py  # Optional album art / preview enrichment
+  streamlit_app.py   # Chatbox UI with Trace + Eval tabs
+  main.py            # CLI: REPL chat + --demo + --baseline
+data/
+  songs.csv          # Original 10-track legacy catalog
+  songs_sample.csv   # 88-track offline fallback (committed)
+  songs.parquet      # ~5k working catalog (gitignored, regenerated)
+eval/
+  golden_cases.yaml          # 12 end-to-end cases
+  behavioral_cases.yaml      # 12 intent-parser cases
+  refinement_cases.yaml      #  3 multi-turn cases
+  harness.py                 # loaders + assertions + runners + writer
+  results/                   # CSVs + summary.json (gitignored)
+tests/                       # 63 unit tests + 14 eval-harness tests
+assets/
+  architecture.mmd           # Mermaid source
+  architecture.png           # Rendered diagram (committed)
+```
 
-- What is this system trying to do
-- Who is it for
+## Limitations
 
-Example:
+- **3B model is small.** `qwen2.5:3b` works well for the slang dictionary in
+  the system prompt but isn't going to handle very subtle queries the way
+  a 70B model would. The agent's hard validator catches its mistakes
+  (OOV nulling, artist-leak prevention, ID-subset constraint) but the
+  intent quality is still bounded by the model.
+- **Catalog is ~5k tracks.** Famous-but-niche artists (some users' favorites)
+  may not be in the sample even with popularity weighting. The agent
+  handles this gracefully (similar-style fallback, surfaced as a note),
+  but it's not a music streaming service.
+- **No LLM-as-judge in the eval harness.** qwen2.5:3b judging its own
+  output is circular at this parameter count. Property-based assertions
+  + grounding regex are reproducible and clearer.
+- **First Streamlit interaction is slow** (~10s) because Ollama warms up
+  the model on the first call. Subsequent calls are 2–5s on CPU.
 
-> This model suggests 3 to 5 songs from a small catalog based on a user's preferred genre, mood, and energy level. It is for classroom exploration only, not for real users.
-
----
-
-## 3. How It Works (Short Explanation)
-
-Describe your scoring logic in plain language.
-
-- What features of each song does it consider
-- What information about the user does it use
-- How does it turn those into a number
-
-Try to avoid code in this section, treat it like an explanation to a non programmer.
-
----
-
-## 4. Data
-
-Describe your dataset.
-
-- How many songs are in `data/songs.csv`
-- Did you add or remove any songs
-- What kinds of genres or moods are represented
-- Whose taste does this data mostly reflect
-
----
-
-## 5. Strengths
-
-Where does your recommender work well
-
-You can think about:
-- Situations where the top results "felt right"
-- Particular user profiles it served well
-- Simplicity or transparency benefits
-
----
-
-## 6. Limitations and Bias
-
-Where does your recommender struggle
-
-Some prompts:
-- Does it ignore some genres or moods
-- Does it treat all users as if they have the same taste shape
-- Is it biased toward high energy or one genre by default
-- How could this be unfair if used in a real product
-
----
-
-## 7. Evaluation
-
-How did you check your system
-
-Examples:
-- You tried multiple user profiles and wrote down whether the results matched your expectations
-- You compared your simulation to what a real app like Spotify or YouTube tends to recommend
-- You wrote tests for your scoring logic
-
-You do not need a numeric metric, but if you used one, explain what it measures.
-
----
-
-## 8. Future Work
-
-If you had more time, how would you improve this recommender
-
-Examples:
-
-- Add support for multiple users and "group vibe" recommendations
-- Balance diversity of songs instead of always picking the closest match
-- Use more features, like tempo ranges or lyric themes
-
----
-
-## 9. Personal Reflection
-
-A few sentences about what you learned:
-
-- What surprised you about how your system behaved
-- How did building this change how you think about real music recommenders
-- Where do you think human judgment still matters, even if the model seems "smart"
-
+See [model_card.md](model_card.md) for full strengths/limitations,
+evaluation methodology, and reflection.

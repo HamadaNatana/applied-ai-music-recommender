@@ -1,0 +1,84 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff7ed','primaryTextColor':'#0f172a','primaryBorderColor':'#475569','lineColor':'#475569','secondaryColor':'#ecfeff','tertiaryColor':'#f1f5f9' }}}%%
+flowchart LR
+    %% --- Inputs ---
+    User([User])
+    UI["Streamlit chatbox<br/><i>src/streamlit_app.py</i>"]
+    CLI["CLI REPL<br/><i>python -m src.main</i>"]
+
+    %% --- Catalog ingest (one-time, dotted) ---
+    HF[("HuggingFace Hub<br/>Spotify tracks dataset")]
+    Norm["normalize_genre()<br/>derive_mood()<br/><i>src/data.py</i>"]
+    Sample["popularity-weighted<br/>stratified sample<br/>~5,000 tracks"]
+    Parquet[("data/songs.parquet")]
+    Fallback[("data/songs_sample.csv<br/>88 curated tracks<br/>(offline fallback)")]
+
+    %% --- Agent loop (solid) ---
+    Intent["Intent Parser<br/>qwen2.5:3b · format=json<br/><i>parse_intent()</i>"]
+    Validator["_validate_intent<br/>(OOV nulling, range clamp,<br/>artist-in-message guard)"]
+    Scorer["recommend_songs() · score_song()<br/><i>src/recommender.py — UNCHANGED</i>"]
+    Explainer["Explainer<br/>qwen2.5:3b · format=json<br/>id-subset constraint"]
+    Cards["Top-K cards<br/>+ grounded explanations"]
+
+    Memory[("session_state<br/>chat history")]
+
+    %% --- Optional enrichment (dotted) ---
+    Spotify[/"Spotify Search API<br/>(album art + 30s preview)<br/><i>src/spotify_enrich.py</i>"/]
+
+    %% --- Fallback (dashed) ---
+    BaselineOnly["Baseline rule-based<br/>(LLM bypass)"]
+
+    %% --- Eval harness (dotted, side path) ---
+    YAML[("eval/*.yaml<br/>~30 cases<br/>(behavioral / golden / refinement)")]
+    Harness["harness.py<br/>property assertions<br/>+ comparison metrics"]
+    ResultsCSV[("eval/results/latest.csv<br/>summary.json")]
+    Reviewer([Human reviewer])
+    ModelCard[/"model_card.md"/]
+
+    %% --- Connections: ingest ---
+    HF -.->|datasets.load_dataset| Norm
+    Norm --> Sample --> Parquet
+    Fallback -.->|HF unreachable| Parquet
+
+    %% --- Connections: runtime ---
+    User --> UI
+    User --> CLI
+    UI -->|free-text query| Intent
+    CLI -->|free-text query| Intent
+    Memory -.->|prior turns + parsed_intent| Intent
+    Intent -->|raw JSON| Validator
+    Validator -->|IntentSchema| Scorer
+    Parquet --> Scorer
+    Scorer -->|top-10 + reasons| Explainer
+    Explainer -->|explanations| Cards
+    Cards --> User
+    Cards -.->|append turn| Memory
+    Cards -.->|optional| Spotify
+    Spotify -.->|art + audio| UI
+
+    %% --- Fallback path ---
+    Intent -. Ollama down .-> BaselineOnly
+    BaselineOnly -. rule-based recs .-> Cards
+
+    %% --- Eval path ---
+    YAML -.->|load_yaml_cases| Harness
+    Harness -.->|invokes| Intent
+    Harness -.->|invokes| Scorer
+    Harness -.->|invokes| Explainer
+    Harness -.->|writes| ResultsCSV
+    ResultsCSV -.->|Streamlit Eval tab| UI
+    Reviewer -. adds cases .-> YAML
+    Reviewer -. reviews failures .-> ResultsCSV
+    Reviewer -. documents findings .-> ModelCard
+
+    %% --- Styling ---
+    classDef agent fill:#ecfeff,stroke:#0891b2,stroke-width:2px,color:#0f172a
+    classDef tool fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#0f172a
+    classDef data fill:#f1f5f9,stroke:#475569,stroke-width:1px,color:#0f172a
+    classDef fallback fill:#fee2e2,stroke:#b91c1c,stroke-width:1px,color:#0f172a
+    classDef eval fill:#ede9fe,stroke:#6d28d9,stroke-width:1px,color:#0f172a
+
+    class Intent,Validator,Explainer agent
+    class Scorer tool
+    class HF,Norm,Sample,Parquet,Fallback,Memory data
+    class BaselineOnly fallback
+    class YAML,Harness,ResultsCSV,Reviewer,ModelCard eval
