@@ -1,0 +1,38 @@
+# Refinement cases: multi-turn conversations. Each `turn` produces its own
+# CaseResult. Cross-turn consistency is asserted via `delta_*` keys (e.g.
+# average energy of turn 2 must be HIGHER than turn 1).
+
+- id: chill_then_upbeat
+  category: refinement
+  turns:
+    - query: "chill electronic music"
+      expect:
+        topk_avg_energy_max: 0.55
+    - query: "more upbeat though"
+      expect:
+        delta_topk_avg_energy_min: 0.10  # avg energy should rise by at least +0.10
+
+- id: hiphop_then_softer
+  category: refinement
+  turns:
+    - query: "hard hitting rap"
+      expect:
+        top1_genre_in: [hip-hop, pop]
+        top1_energy_min: 0.6
+    - query: "less intense"
+      expect:
+        delta_topk_avg_energy_max: -0.05  # energy should drop
+
+- id: artist_then_fresh_topic
+  category: refinement
+  # The user switches topic; the previous artist should NOT carry over.
+  turns:
+    - query: "songs by The Weeknd"
+      expect:
+        # Catalog coverage varies; even one match is acceptable.
+        topk_min_count: 1
+    - query: "give me jazz music"
+      expect:
+        top1_genre_in: [jazz, classical, folk]
+        # The agent must NOT still be filtering to The Weeknd
+        top1_artist_lower_excludes: weeknd

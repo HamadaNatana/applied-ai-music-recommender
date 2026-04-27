@@ -1,0 +1,72 @@
+# Behavioral cases: assert what the intent parser extracts. Tests the LLM's
+# JSON output BEFORE the scorer runs — so OOV nulling, slang mapping, and
+# artist extraction can be checked in isolation.
+
+- id: explicit_pop_genre
+  query: "I love pop music"
+  expect:
+    genre: pop
+
+- id: explicit_jazz_genre
+  query: "give me some jazz"
+  expect:
+    genre: jazz
+
+- id: explicit_genre_and_mood
+  query: "chill lofi beats"
+  expect:
+    genre: electronic
+    mood_in: [chill, focused, relaxed]
+
+- id: oov_genre_must_be_null
+  query: "play polka music"
+  # Critical safety: polka is not in the catalog taxonomy.
+  # Agent must NOT hallucinate a similar genre.
+  expect:
+    genre: null
+
+- id: oov_genre_kpop_fringe
+  query: "I want some kpop"
+  # k-pop normalizes to "pop" in our taxonomy, but qwen2.5:3b doesn't always
+  # know that mapping. Acceptable if it returns null (safe) or "pop" (correct).
+  expect:
+    genre_in: [pop, null]
+
+- id: artist_explicit_by_phrase
+  query: "songs by The Weeknd"
+  expect:
+    artist_lower_contains: weeknd
+
+- id: artist_play_phrase
+  query: "play some Bad Bunny"
+  expect:
+    artist_lower_contains: bad bunny
+
+- id: artist_like_phrase_should_not_set_artist
+  query: "music like The Weeknd but more upbeat"
+  # "like X" should not set artist — user wants the STYLE, not that artist's tracks
+  expect:
+    artist: null
+
+- id: ambiguous_no_signal
+  query: "music"
+  # All fields should be null or default-ish — no hallucinated genre/mood
+  expect:
+    genre: null
+    artist: null
+
+- id: slang_aux_rap
+  query: "aux rap songs"
+  expect:
+    genre: hip-hop
+    energy_min: 0.7
+
+- id: slang_workout
+  query: "gym workout pumped music"
+  expect:
+    energy_min: 0.7
+
+- id: slang_sad
+  query: "sad heartbreak music"
+  expect:
+    valence_max: 0.45

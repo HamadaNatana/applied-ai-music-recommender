@@ -1,0 +1,92 @@
+# Golden cases: free-text query -> expected properties of the top result.
+# Property-based, not exact-match. The goal is to verify the agent extracts
+# the right intent from natural language and the scorer surfaces sensible
+# tracks. Run with `pytest --ollama`.
+
+- id: workout_upbeat
+  category: workout
+  query: "upbeat workout music"
+  expect:
+    top1_energy_min: 0.7
+    top1_genre_in: [pop, rock, hip-hop, electronic]
+    topk_avg_energy_min: 0.6
+
+- id: workout_hype_gym
+  category: workout
+  query: "hype gym playlist"
+  expect:
+    top1_energy_min: 0.75
+    topk_avg_energy_min: 0.65
+
+- id: study_late_night
+  category: study
+  query: "music for a late night coding session"
+  expect:
+    top1_energy_max: 0.6
+    top1_mood_in: [chill, focused, relaxed]
+    topk_avg_energy_max: 0.55
+
+- id: study_focus
+  category: study
+  query: "background music for studying"
+  expect:
+    top1_energy_max: 0.55
+    top1_mood_in: [chill, focused, relaxed, moody]
+
+- id: party_hype
+  category: party
+  query: "party music to turn up to"
+  expect:
+    top1_energy_min: 0.7
+    top1_valence_min: 0.45
+
+- id: chill_vibing
+  category: chill
+  query: "chill vibing music"
+  expect:
+    top1_energy_max: 0.6
+    top1_mood_in: [chill, relaxed, focused]
+
+- id: sad_rainy
+  category: sad
+  query: "sad music for a rainy day"
+  expect:
+    top1_valence_max: 0.5
+    top1_mood_in: [moody, chill, relaxed]
+
+- id: heartbreak
+  category: sad
+  query: "heartbreak songs"
+  expect:
+    top1_valence_max: 0.5
+    top1_mood_in: [moody, chill, relaxed]
+
+- id: aux_rap
+  category: aux
+  query: "aux rap songs for the car"
+  expect:
+    top1_genre_in: [hip-hop, pop]
+    topk_avg_energy_min: 0.6
+
+- id: latin_dance
+  category: dance
+  query: "latin dance music"
+  expect:
+    top1_genre_in: [latin, pop]
+    top1_valence_min: 0.5
+
+- id: oov_polka_query
+  category: adversarial
+  query: "play polka music"
+  # Polka is OOV. Agent should still return SOMETHING (no empty result),
+  # but we don't assert genre — there's no "polka" in our taxonomy and the
+  # agent may degrade to whatever rule-based scoring returns.
+  expect:
+    topk_min_count: 3
+
+- id: classical_relaxed
+  category: classical
+  query: "calm classical piano music"
+  expect:
+    top1_genre_in: [classical, jazz, folk]
+    top1_energy_max: 0.5
